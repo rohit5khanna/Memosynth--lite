@@ -116,14 +116,14 @@ memosynth-lite/
 | `utility.py`          | Helper functions (e.g., cosine similarity)                   |
 
 
-## 🛠️ Techn Stack
+## 🛠️ Tech Stack
 
 | Tool         | Purpose                        |
 |--------------|-------------------------------|
 | Qdrant       | Vector DB (semantic search)    |
 | DuckDB       | Timeline/log (temporal)        |
 | Neo4j        | Graph DB (relationships)       |
-| Ollama       | Local LLM server (summaries)   |
+| Tinyllama with Ollama       | Local LLM server (summaries)   |
 | SentenceTransformers | Embedding model        |
 | Python Async | Non-blocking, scalable APIs    |
 
