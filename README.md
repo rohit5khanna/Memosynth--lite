@@ -2,7 +2,6 @@
 
 > **A modular, LLM-powered memory system for agents, combining semantic search, timeline logging, graph relationships, and robust conflict handling.**
 
-![Timeline Output](images/Shot_5.png)
  
 ## 📖 Table of Contents
 
@@ -296,50 +295,55 @@ All data stores (Qdrant, Neo4j, DuckDB) are cleared at the start.
 
 Three sample memories are defined and written to all stores.
 
-> _**Screenshot:** Print/log output confirming memory writes_  
-> 
+![Memory Storage](images/Shot_11.png)
+
 
 ### 3. Timeline Logging
 
 Memories are logged to DuckDB with timestamps and versioning.  
 No duplicates are allowed.
 
-> _**Screenshot:** Timeline DataFrame output_  
-> 
+![Timeline Logging](images/Shot_3.png)
+
 
 ### 4. Graph Relationships
 
 Entities and relationships are extracted from memory summaries and stored in Neo4j.
 
-> _**Screenshot:** Neo4j Browser or printout of graph relationships_  
-> 
+![Graph Output](images/Shot_4.png)
+![Neo4j Objects](images/visualization.png)
+![Graph Relationships](images/Shot_8.png)
+![Graph Rekationships in Neo4j](images/visualization-2.png)
 
 ### 5. Semantic Search
 
 Semantic queries return relevant memories, re-ranked by recency and confidence.
 
-> _**Screenshot:** Semantic search results_  
-> 
+![Query Output](images/Shot_5.png)
+
 
 ### 6. Summarization (LLM)
 
 All memories are summarized using an LLM.  
 **LLM output is automatically cleaned and repaired using the `json-repair` library to handle malformed JSON.**
 
-> _**Screenshot:** LLM summary output_  
->
-> 
-### 7. Summarization (LLM)
+![Summary Output](images/Shot_6.png)
 
-All memories are summarized using an LLM.
+
+### 7. Diff and Resolve (LLM)
+
+Given memories are checked for differences, and their difference is resolved and reconciled using an LLM.
+
+![Resolve Output](images/Shot_7.png)
+
 
 ### 8. Conflict Handling
 
 Memory updates with conflicting versions are detected and logged.  
 Conflict logs are stored in DuckDB for auditability.
 
-> _**Screenshot:** Conflict log DataFrame_  
-> 
+![Memory Update/Conflict Output](images/Shot_9.png)
+
 
 ### 9. Cross-Store Consistency
 
@@ -349,8 +353,8 @@ Checks that all memories are present in Qdrant, DuckDB, and Neo4j.
 
 Batch insertion and query timing are measured to demonstrate scalability.
 
-> _**Screenshot:** Performance timing and summary table_  
-> 
+![Performance Output](images/Shot_10.png)
+
 
 ## 💡 Design Decisions & Best Practices
 
