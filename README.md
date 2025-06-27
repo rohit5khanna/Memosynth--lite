@@ -148,7 +148,7 @@ MemoSynth-Lite uses a three-store architecture:
 
 3. **Timeline Logging (DuckDB):**  
    - The memory is logged in DuckDB with a timestamp and version.
-   - Duplicate IDs are prevented by a primary key constraint.
+   - A primary key constraint prevents Duplicate IDs.
 
 4. **Entity & Relationship Extraction (Neo4j):**  
    - Entities and relationships are extracted from the summary using an LLM.
@@ -162,7 +162,7 @@ MemoSynth-Lite uses a three-store architecture:
    - Queries are embedded and used to retrieve the most relevant memories from Qdrant, re-ranked by recency and confidence.
 
 7. **Summarization & Diff:**  
-   - All memories can be summarized by the LLM.
+   - The LLM can summarize all memories.
    - Any two memories can be compared (`diff`) or reconciled (`resolve`) using vector similarity and LLM output.
 
 8. **Cross-Store Consistency Check:**  
@@ -283,15 +283,12 @@ pip install -r requirements.txt
 
 ## 🎬 Demo Walkthrough
 
-The main demo is in `notebook/demo-3.ipynb`.  
+The main demo is in `notebook/demo.ipynb`.  
 **Each run resets all stores for reproducibility.**
 
 ### 1. Environment Reset
 
 All data stores (Qdrant, Neo4j, DuckDB) are cleared at the start.
-
-> _**Screenshot:** Show confirmation outputs for reset_  
-> 
 
 ### 2. Memory Creation & Storage
 
@@ -328,9 +325,13 @@ All memories are summarized using an LLM.
 **LLM output is automatically cleaned and repaired using the `json-repair` library to handle malformed JSON.**
 
 > _**Screenshot:** LLM summary output_  
+>
 > 
+### 7. Summarization (LLM)
 
-### 7. Conflict Handling
+All memories are summarized using an LLM.
+
+### 8. Conflict Handling
 
 Memory updates with conflicting versions are detected and logged.  
 Conflict logs are stored in DuckDB for auditability.
@@ -338,14 +339,11 @@ Conflict logs are stored in DuckDB for auditability.
 > _**Screenshot:** Conflict log DataFrame_  
 > 
 
-### 8. Cross-Store Consistency
+### 9. Cross-Store Consistency
 
 Checks that all memories are present in Qdrant, DuckDB, and Neo4j.
 
-> _**Screenshot:** Consistency check output_  
-> 
-
-### 9. Performance Test
+### 10. Performance Test
 
 Batch insertion and query timing are measured to demonstrate scalability.
 
@@ -359,14 +357,14 @@ Batch insertion and query timing are measured to demonstrate scalability.
 - **Asynchronous Design:** All core APIs and database operations are fully asynchronous (`async`/`await`), enabling concurrent writes and reads to Qdrant, DuckDB, and Neo4j. This ensures non-blocking, scalable performance and smooth integration with agent workflows or high-throughput applications.
 - **Conflict Handling:** Implements optimistic concurrency via versioning and detailed conflict logs.
 - **Entity Segregation:** Distinguishes between `Memory` and `Entity` nodes in Neo4j for clarity.
-- **Cross-Store Consistency:** Regular checks ensure no memory is lost or out-of-sync.
+- **Cross-Store Consistency:** Regular checks ensure no memory is lost or out of sync.
 
 
 ## 🛠️ Troubleshooting
 
 - **Qdrant/Neo4j not running:** Ensure both Docker containers are up before running the notebook.
 - **LLM JSON errors:** If you see "JSON extraction failed," check that `json-repair` is installed and imported.
-- **Missing outputs:** Rerun all cells from top to bottom after resetting state.
+- **Missing outputs:** Rerun all cells from top to bottom after resetting the state.
 
 ## 🚧 Future Improvements
 
