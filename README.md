@@ -1,9 +1,7 @@
 # MemoSynth-Lite
 
 > **A modular, LLM-powered memory system for agents, combining semantic search, timeline logging, graph relationships, and robust conflict handling.**
-
-[images/Shot 5.png](https://github.com/rohit5khanna/Memosynth--lite/blob/main/images/Shot%203.png)
-
+ 
 ## 📖 Table of Contents
 
 - [Project Overview](#project-overview)
