@@ -1,24 +1,93 @@
 # MemoSynth-Lite
 
-A Beginner-Friendly Project to Build an LLM Agent Memory System
+> **A modular, LLM-powered memory system for agents, combining semantic search, timeline logging, graph relationships, and robust conflict handling.**
 
----
+## 📖 Table of Contents
+
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Async Features](#async)
+- [Project Structure](#project-structure)
+- [Technologies Used](#technologies)
+- [Architecture](#architecture)
+- [Memory Workflow](#memory-workflow)
+- [Memory Schema](#memory-schema)
+- [APIs](#apis)
+- [Getting Started](#getting-started)
+    - [Installation](#installation)
+    - [Setup: Databases & Dependencies](#setup-databases--dependencies)
+- [Demo Walkthrough](#demo-walkthrough)
+    - [1. Environment Reset](#1-environment-reset)
+    - [2. Memory Creation & Storage](#2-memory-creation--storage)
+    - [3. Timeline Logging](#3-timeline-logging)
+    - [4. Graph Relationships](#4-graph-relationships)
+    - [5. Semantic Search](#5-semantic-search)
+    - [6. Summarization (LLM)](#6-summarization-llm)
+    - [7. Conflict Handling](#7-conflict-handling)
+    - [8. Cross-Store Consistency](#8-cross-store-consistency)
+    - [9. Performance Test](#9-performance-test)
+- [Design Decisions & Best Practices](#design-decisions--best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Future Improvements](#future-improvements)
+- [Contact](#contact)
 
 ## 📝 Project Overview
 
-**MemoSynth-Lite** is a hands-on, beginner-friendly project that guides you through building a lightweight memory system for AI agents. The system enables an agent to store, retrieve, summarize, and relate "memories"—mimicking human-like recall and reasoning—using only free, open-source tools.
+MemoSynth-Lite is a modular, multi-store memory system for LLM agents.  
+It enables agents to remember, retrieve, and summarize information over time—just like a human memory.  
+This project demonstrates how to:
+- Store and search memories semantically (Qdrant)
+- Track memory evolution and conflicts (DuckDB)
+- Extract and relate entities and events (Neo4j)
+- Summarize, compare, and resolve memory conflicts using LLMs
 
-**Core Features:**
-- Store memories with semantic embeddings in a vector database (Qdrant)
-- Track source, and time for each memory
-- Query, summarize, and compare memories using LLMs (TinyLlama via Ollama)
-- Maintain a timeline of events (DuckDB)
-- Relate memories in a simple graph (Neo4j)
-- Interactive demonstration in Jupyter Notebook
+**Motivation:**  
+Modern LLM agents need a robust, multi-modal memory system to reason, plan, and act over long time horizons. MemoSynth-Lite is designed to be simple, extensible, and as a foundation for more advanced AI projects on similar lines.
 
----
+## 🚀 Features
 
-## 📁 Project Structure
+- **Semantic Search:** Retrieve memories by meaning, not just keywords.
+- **Timeline Logging:** Chronologically track all memory events and updates.
+- **Graph Relationships:** Model entities, relationships, and memory links.
+- **LLM Summarization:** Summarize and reconcile memories with an LLM.
+- **Conflict Handling:** Detect, log, and resolve version conflicts.
+- **Cross-Store Consistency:** Ensure all memories are synchronized across stores.
+- **Performance at Scale:** Efficient handling of batch inserts and queries.
+
+## ⚡ Async Features
+
+MemoSynth-Lite is **fully asynchronous** and leverages Python’s `async`/`await` syntax and the `asyncio` library for high-performance, concurrent operations.
+
+- **All core APIs are async:**  
+  Functions such as `write_and_sync_memory`, `query_memory`, `update_memory`, and graph/timeline operations are defined with `async def` and must be called with `await`.
+
+- **Concurrent multi-store writes:**  
+  When saving a memory, the system writes to Qdrant, DuckDB, and Neo4j concurrently using `asyncio.gather`, ensuring fast and reliable syncing across stores.
+
+- **Async database clients:**  
+  The project uses `AsyncQdrantClient` and `AsyncGraphDatabase` for non-blocking database access.
+
+- **Scalable and responsive:**  
+  Async design allows the system to handle multiple memory operations in parallel, making it suitable for agent workflows and future production scaling.
+
+### How to use async APIs
+
+**In a Jupyter notebook, prefix calls with `await`:**
+```python
+await write_and_sync_memory(memory)
+results = await query_memory("What are Q2 risks?")
+```
+
+**In a script, use `asyncio.run()`:**
+```python
+import asyncio
+asyncio.run(write_and_sync_memory(memory))
+```
+
+> **Note:**  
+> If you are new to async Python, see the [asyncio documentation](https://docs.python.org/3/library/asyncio.html) for details and examples.
+
+### Project Structure
 
 ```
 memosynth-lite/
@@ -27,69 +96,84 @@ memosynth-lite/
 │   ├── vector_store.py
 │   ├── timeline_store.py
 │   ├── graph_store.py
+│   ├── utility.py
 ├── notebook/
 │   └── demo.ipynb
 ├── config/
 │   └── sample_memory.json
-├── requirements.txt
-└── README.md
+├── test/
+├── README.md
+└── requirements.txt
 ```
 
----
+| Module                | Purpose                                                      |
+|-----------------------|-------------------------------------------------------------|
+| `vector_store.py`     | Store/retrieve memories as embeddings in Qdrant (semantic)   |
+| `timeline_store.py`   | Log memory events and conflicts in DuckDB (temporal)         |
+| `graph_store.py`      | Model relationships/entities in Neo4j (relational/graph)     |
+| `memory_client.py`    | High-level async APIs for all memory operations              |
+| `utility.py`          | Helper functions (e.g., cosine similarity)                   |
 
-## 🚀 Quick Start
 
-### 1. **Clone the Repository**
-```
-git clone https://github.com/rohit5khanna/memosynth-lite.git
-cd memosynth-lite
-```
+## 🛠️ Technologies Used
 
-### 2. **Set Up Python Environment**
-```
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
+| Tool         | Purpose                        |
+|--------------|-------------------------------|
+| Qdrant       | Vector DB (semantic search)    |
+| DuckDB       | Timeline/log (temporal)        |
+| Neo4j        | Graph DB (relationships)       |
+| Ollama       | Local LLM server (summaries)   |
+| SentenceTransformers | Embedding model        |
+| Python Async | Non-blocking, scalable APIs    |
 
-### 3. **Start Required Services**
-- **Qdrant (Vector DB):**
-  ```
-  docker run -p 6333:6333 qdrant/qdrant
-  ```
-- **DuckDB:** No server needed; used as a local file.
-- **Neo4j (Graph DB):**
-  ```
-  docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/geophysicist neo4j
-  ```
-- **Ollama (LLM inference):**
-  ```
-  brew install ollama
-  ollama serve
-  ollama pull tinyllama
-  ```
+## 🏗️ Architecture
 
-### 4. **Run the Interactive Demo**
-```
-jupyter notebook notebook/demo.ipynb
-```
-Follow the notebook cells to simulate memory storage, querying, summarization, diff, and resolution.
+MemoSynth-Lite uses a three-store architecture:
 
----
+| Component     | Technology         | Role                                      |
+|---------------|--------------------|-------------------------------------------|
+| Vector Store  | Qdrant             | Semantic search and embedding storage     |
+| Timeline      | DuckDB             | Chronological log and conflict tracking   |
+| Graph Store   | Neo4j              | Entity/event extraction and relationships |
 
-## 🧩 Key Components
 
-- **`memory_client.py`**: Defines the memory schema and APIs for summarization, diff, and resolve.
-- **`vector_store.py`**: Handles semantic storage and retrieval using Qdrant and sentence-transformers.
-- **`timeline_store.py`**: Logs memory events and tracks them over time using DuckDB.
-- **`graph_store.py`**: (Optional) Manages memory nodes and simple relationships in Neo4j.
-- **`demo.ipynb`**: Walks through the full memory workflow interactively.
 
----
+## 🔄 Memory Workflow
 
-## 💡 Example Memory Object
+1. **Memory Creation:**  
+   - A new memory is created with metadata (ID, summary, tags, source, timestamps, etc.).
 
-```
+2. **Vector Storage (Qdrant):**  
+   - The memory summary is embedded as a vector and stored in Qdrant for semantic search.
+
+3. **Timeline Logging (DuckDB):**  
+   - The memory is logged in DuckDB with a timestamp and version.
+   - Duplicate IDs are prevented by a primary key constraint.
+
+4. **Entity & Relationship Extraction (Neo4j):**  
+   - Entities and relationships are extracted from the summary using an LLM.
+   - Entities are stored as `Entity` nodes; relationships are created between them.
+   - The memory is linked to its entities in the graph.
+
+5. **Memory Update:**  
+   - Updates increment the version if no conflict; conflicting updates are logged in DuckDB.
+
+6. **Semantic Search:**  
+   - Queries are embedded and used to retrieve the most relevant memories from Qdrant, re-ranked by recency and confidence.
+
+7. **Summarization & Diff:**  
+   - All memories can be summarized by the LLM.
+   - Any two memories can be compared (`diff`) or reconciled (`resolve`) using vector similarity and LLM output.
+
+8. **Cross-Store Consistency Check:**  
+   - The system checks that all memories are present in Qdrant, DuckDB, and Neo4j.
+
+
+## 📝 Memory Schema
+
+A "memory" is a structured Python dict with rich metadata:
+
+```python
 example_memory = {
     "id": "m-001",
     "project": "demo_project",
@@ -107,90 +191,198 @@ example_memory = {
 }
 ```
 
----
+## 🛠️ APIs
 
-## 🛠️ APIs & Usage
+MemoSynth-Lite exposes a set of core Python APIs for memory management.  
+All APIs are async for scalability and can be called from your code or notebook.
 
-- **Write Memory:**  
-  Store a memory in Qdrant and log in DuckDB.
-- **Query Memory:**  
-  Retrieve semantically similar memories using vector search.
-- **Summarize Memories:**  
-  Use TinyLlama (via Ollama) to generate concise summaries.
-- **Diff & Resolve:**  
-  Compare two memories and resolve contradictions using LLM.
-- **Graph Relationships:**  
-  Add basic links between memories in Neo4j for visualization.
+### **Memory APIs**
 
----
+- **`write_and_sync_memory(memory)`**  
+  Save a memory to all stores (Qdrant, DuckDB, Neo4j) in parallel.
 
-## 🧠 Memory Workflow
+- **`query_memory(prompt, top_k=3)`**  
+  Semantic search for memories matching a query. Returns top_k results, re-ranked by recency and confidence.
 
-1. **Environment Setup & State Reset:**  
-   Prepare the environment, clear previous data from Qdrant and DuckDB.
+- **`update_memory(new_memory)`**  
+  Update a memory by ID and version. Handles version conflicts and logs them.
 
-2. **Define Memories:**  
-   Specify three memory objects, each with rich metadata.
+- **`get_memory_by_id(memory_id)`**  
+  Retrieve a memory by its unique ID from Qdrant.
 
-3. **Store Memories:**  
-   Write each memory to the vector store and log to the timeline.
+### **Timeline APIs**
 
-4. **Graph Memory :**  
-   Create nodes and relationships in Neo4j for advanced memory linking.
+- **`log_memory(memory)`**  
+  Log a memory in DuckDB timeline (skip if duplicate).
 
-5. **Visualize Timeline:**  
-   Display all memories as a table using pandas.
+- **`log_conflict(new_memory, current_memory, conflict_type="version")`**  
+  Log a version or content conflict to DuckDB.
 
-6. **Query Memories:**  
-   Retrieve relevant memories with semantic search.
+### **Graph APIs**
 
-7. **Summarize Memories:**  
-   Generate a summary using an LLM.
+- **`create_memory_node(memory)`**  
+  Create or update a memory node in Neo4j.
 
-8. **Compare & Resolve:**  
-   Show differences and resolve contradictions between memories.
+- **`extract_entities_and_relationships(summary)`**  
+  Use an LLM to extract entities and relationships from a memory summary.
 
-| Step                    | Code/Function(s) Used                   | Output/Goal                        |
-|-------------------------|---------------------------------------- |------------------------------------|
-| State reset             | `delete_collection`, `DELETE FROM`      | Fresh demo run                     |
-| Define memories         | Python dicts                            | 3 memory objects                   |
-| Store memories          | `write_memory`, `log_memory`            | Data in Qdrant, DuckDB             |
-| Graph memory            | `create_memory_node`,`relate_memories`, | Nodes/edges in Neo4j,              |
-                            `find_related_memories`                   multi-hop query
-| Visualize timeline      | pandas DataFrame                        | Tabular timeline                   |
-| Query                   | `query_memory`                          | Relevant memories                  |
-| Summarize               | `summarize_memories`                    | LLM-generated summary              |
-| Diff & resolve          | `diff`, `resolve`                       | Highlight & synthesize             |
+- **`create_entity_nodes(nodes)`**  
+  Create entity nodes in Neo4j from extracted entities.
 
----
+- **`create_entity_relationships(edges)`**  
+  Create relationships between entity nodes in Neo4j.
 
-## 📚 Dependencies
+- **`link_memory_to_entities(memory_id, nodes)`**  
+  Link a memory node to its extracted entities in Neo4j.
 
-- Python 3.8+
-- [sentence-transformers](https://www.sbert.net/)
-- [qdrant-client](https://qdrant.tech/)
-- [duckdb](https://duckdb.org/)
-- [neo4j](https://neo4j.com/) (optional)
-- [pandas](https://pandas.pydata.org/)
-- [rich](https://rich.readthedocs.io/)
-- [Ollama](https://ollama.com/) (for local LLM inference)
+- **`find_related_memories(memory_id, max_hops=3)`**  
+  Find related memories in the graph up to a certain number of hops.
 
----
+### **Summarization & Diff APIs**
 
-## 🤝 Contributing
+- **`summarize_memories(memories)`**  
+  Summarize a list of memories using an LLM.
 
-Contributions are welcome! Please fork the repo and submit a pull request.  
-For suggestions or issues, open a GitHub issue or contact the maintainer.
+- **`diff(mem1, mem2)`**  
+  Compare two memories for content similarity and show differences.
 
----
+- **`resolve(mem1, mem2)`**  
+  Use the LLM to reconcile conflicting memories and produce a unified summary.
 
 
-## 🙋‍♂️ Contact
+## ⚡ Getting Started
 
-For questions or support, open an issue on GitHub or email [121rohit5khanna@gmail.com].
+### Installation
 
----
-
-
-**Inspired by [MemoSynth-Lite](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/31230649/a1f62bc3-0e5d-49fa-bb20-d5b9849ef56b/Copy-of-MemoSynth-Lite.pdf) and the open-source agent memory community.**
+```bash
+git clone https://github.com/yourusername/memosynth-lite.git
+cd memosynth-lite
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
+
+
+### Setup: Databases & Dependencies
+
+- **Qdrant (Vector DB):**
+  ```bash
+  docker run -p 6333:6333 qdrant/qdrant
+  ```
+- **Neo4j (Graph DB):**
+  ```bash
+  docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/test neo4j
+  ```
+- **DuckDB:** No setup needed; uses a local file.
+
+- **Install Python dependencies:**
+  ```
+  pip install -r requirements.txt
+  ```
+  *(Make sure `json-repair` is included for robust LLM JSON parsing)*
+
+## 🎬 Demo Walkthrough
+
+The main demo is in `notebook/demo-3.ipynb`.  
+**Each run resets all stores for reproducibility.**
+
+### 1. Environment Reset
+
+All data stores (Qdrant, Neo4j, DuckDB) are cleared at the start.
+
+> _**Screenshot:** Show confirmation outputs for reset_  
+> 
+
+### 2. Memory Creation & Storage
+
+Three sample memories are defined and written to all stores.
+
+> _**Screenshot:** Print/log output confirming memory writes_  
+> 
+
+### 3. Timeline Logging
+
+Memories are logged to DuckDB with timestamps and versioning.  
+No duplicates are allowed.
+
+> _**Screenshot:** Timeline DataFrame output_  
+> 
+
+### 4. Graph Relationships
+
+Entities and relationships are extracted from memory summaries and stored in Neo4j.
+
+> _**Screenshot:** Neo4j Browser or printout of graph relationships_  
+> 
+
+### 5. Semantic Search
+
+Semantic queries return relevant memories, re-ranked by recency and confidence.
+
+> _**Screenshot:** Semantic search results_  
+> 
+
+### 6. Summarization (LLM)
+
+All memories are summarized using an LLM.  
+**LLM output is automatically cleaned and repaired using the `json-repair` library to handle malformed JSON.**
+
+> _**Screenshot:** LLM summary output_  
+> 
+
+### 7. Conflict Handling
+
+Memory updates with conflicting versions are detected and logged.  
+Conflict logs are stored in DuckDB for auditability.
+
+> _**Screenshot:** Conflict log DataFrame_  
+> 
+
+### 8. Cross-Store Consistency
+
+Checks that all memories are present in Qdrant, DuckDB, and Neo4j.
+
+> _**Screenshot:** Consistency check output_  
+> 
+
+### 9. Performance Test
+
+Batch insertion and query timing are measured to demonstrate scalability.
+
+> _**Screenshot:** Performance timing and summary table_  
+> 
+
+## 💡 Design Decisions & Best Practices
+
+- **Three-Store Architecture:** Enables flexible, robust memory management for LLM agents ([see discussion](https://memgraph.com/blog/integrating-vector-and-graph-databases-gen-ai-llms)).
+- **LLM JSON Cleaning:** Uses `json-repair` to robustly handle malformed LLM output.
+- **Asynchronous Design:** All core APIs and database operations are fully asynchronous (`async`/`await`), enabling concurrent writes and reads to Qdrant, DuckDB, and Neo4j. This ensures non-blocking, scalable performance and smooth integration with agent workflows or high-throughput applications.
+- **Conflict Handling:** Implements optimistic concurrency via versioning and detailed conflict logs.
+- **Entity Segregation:** Distinguishes between `Memory` and `Entity` nodes in Neo4j for clarity.
+- **Cross-Store Consistency:** Regular checks ensure no memory is lost or out-of-sync.
+
+
+## 🛠️ Troubleshooting
+
+- **Qdrant/Neo4j not running:** Ensure both Docker containers are up before running the notebook.
+- **LLM JSON errors:** If you see "JSON extraction failed," check that `json-repair` is installed and imported.
+- **Missing outputs:** Rerun all cells from top to bottom after resetting state.
+
+## 🚧 Future Improvements
+
+- Add more advanced entity and relationship extraction.
+- Integrate with real LLM APIs (OpenAI, HuggingFace, etc.).
+- Add a user interface for non-technical users.
+- Visualize the graph interactively in the notebook.
+- Add authentication and access control.
+
+
+## 🤝 Contact
+
+**Author:** Rohit Khanna  
+**Email:** 121rohit5khanna@gmail.com  
+**GitHub:** rohit5khanna(https://github.com/rohit5khanna)
+
+
+For questions or contributions, please open an issue or pull request!
+
