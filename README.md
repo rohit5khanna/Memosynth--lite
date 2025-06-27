@@ -2,7 +2,7 @@
 
 > **A modular, LLM-powered memory system for agents, combining semantic search, timeline logging, graph relationships, and robust conflict handling.**
 
-![Timeline Output](images/Shot 5.png)
+images/Shot 5.png
 
 ## 📖 Table of Contents
 
