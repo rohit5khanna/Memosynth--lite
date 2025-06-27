@@ -9,7 +9,7 @@
 - [Features](#features)
 - [Async Features](#async)
 - [Project Structure](#project-structure)
-- [Technologies Used](#technologies)
+- [Techn Stack](#tech)
 - [Architecture](#architecture)
 - [Memory Workflow](#memory-workflow)
 - [Memory Schema](#memory-schema)
@@ -116,7 +116,7 @@ memosynth-lite/
 | `utility.py`          | Helper functions (e.g., cosine similarity)                   |
 
 
-## 🛠️ Technologies Used
+## 🛠️ Techn Stack
 
 | Tool         | Purpose                        |
 |--------------|-------------------------------|
