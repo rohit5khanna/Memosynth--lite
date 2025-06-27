@@ -311,9 +311,9 @@ No duplicates are allowed.
 Entities and relationships are extracted from memory summaries and stored in Neo4j.
 
 ![Graph Output](images/Shot_4.png)
-![Neo4j Objects](images/visualization.png)
+![Neo4j Objects](images/visualisation.png)
 ![Graph Relationships](images/Shot_8.png)
-![Graph Rekationships in Neo4j](images/visualization-2.png)
+![Graph Relationships in Neo4j](images/visualisation-2.png)
 
 ### 5. Semantic Search
 
