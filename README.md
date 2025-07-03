@@ -9,7 +9,7 @@
 - [Features](#features)
 - [Async Features](#async)
 - [Project Structure](#project-structure)
-- [Techn Stack](#tech)
+- [Tech Stack](#tech)
 - [Architecture](#architecture)
 - [Memory Workflow](#memory-workflow)
 - [Memory Schema](#memory-schema)
