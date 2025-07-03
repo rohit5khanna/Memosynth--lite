@@ -28,6 +28,8 @@
     - [8. Cross-Store Consistency](#8-cross-store-consistency)
     - [9. Performance Test](#9-performance-test)
 - [Design Decisions & Best Practices](#design-decisions--best-practices)
+    - [Design tradeoffs](#tradeoffs)
+    - [Potential Extensions](#extensions)
 - [Troubleshooting](#troubleshooting)
 - [Future Improvements](#future-improvements)
 - [Contact](#contact)
@@ -365,6 +367,43 @@ Batch insertion and query timing are measured to demonstrate scalability.
 - **Entity Segregation:** Distinguishes between `Memory` and `Entity` nodes in Neo4j for clarity.
 - **Cross-Store Consistency:** Regular checks ensure no memory is lost or out of sync.
 
+### Design Tradeoffs
+
+MemoSynth-Lite is designed for clarity, extensibility, and demonstration of modern agent memory concepts. The current architecture makes several intentional tradeoffs:
+
+- **Multi-Store Complexity vs. Retrieval Power**
+  - **Pros:** Combines vector (Qdrant), timeline (DuckDB), and graph (Neo4j) stores for rich, multi-dimensional memory retrieval—enabling semantic search, chronological queries, and relationship reasoning.
+  - **Cons:** Increases operational and development complexity, as each store requires its own setup, maintenance, and integration logic.
+
+- **Async Operations for Scalability**
+  - **Pros:** Async APIs allow concurrent writes and queries, improving responsiveness and throughput, especially when interacting with multiple databases and LLMs.
+  - **Cons:** Adds complexity to error handling and debugging, and may not provide speedup for CPU-bound or strictly sequential tasks.
+
+- **Immediate Consistency via Best-Effort Sync**
+  - **Pros:** All stores are updated together for each memory event, providing near real-time consistency.
+  - **Cons:** No distributed transactions—if a write fails in one store, manual or periodic consistency checks are needed to detect and resolve drift.
+
+- **All Memories Persisted by Default**
+  - **Pros:** Simple, transparent: every submitted memory is stored, ensuring nothing is lost.
+  - **Cons:** No built-in mechanism for filtering, forgetting, or archiving low-value or obsolete memories, which could lead to bloat as data grows.
+
+- **LLM Summarization and Conflict Resolution**
+  - **Pros:** Enables human-like abstraction and reconciliation of knowledge.
+  - **Cons:** LLM calls add latency and cost, and require careful prompt engineering and output validation.
+
+### Potential Extensions
+
+As the system grows or moves toward production, the following enhancements can be added:
+
+| Feature                        | Benefit                                 | When to Add                |
+|---------------------------------|-----------------------------------------|----------------------------|
+| STM/LTM migration               | Faster recall, less clutter             | As data volume grows       |
+| Automatic archiving/forgetting  | Prevents bloat, improves relevance      | For long-running systems   |
+| Ingestion filtering             | Higher memory quality                   | With noisy/unfiltered data |
+| User/session context            | Personalization, access control         | Multi-user deployments     |
+| Security/privacy controls       | Data protection, compliance             | Handling sensitive data    |
+| Distributed deployment          | Scalability, reliability                | At large scale             |
+| Consistency audits/repair       | Data integrity                          | As system complexity grows |
 
 ## 🛠️ Troubleshooting
 
@@ -374,11 +413,11 @@ Batch insertion and query timing are measured to demonstrate scalability.
 
 ## 🚧 Future Improvements
 
-- Add more advanced entity and relationship extraction.
+- Adding more advanced entity and relationship extraction.
 - Integrate with real LLM APIs (OpenAI, HuggingFace, etc.).
-- Add a user interface for non-technical users.
+- Adding a user interface for non-technical users.
 - Visualize the graph interactively in the notebook.
-- Add authentication and access control.
+- Adding authentication and access control.
 
 
 ## 🤝 Contact
