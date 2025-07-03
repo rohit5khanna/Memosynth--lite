@@ -274,7 +274,7 @@ pip install -r requirements.txt
   ```
 - **Neo4j (Graph DB):**
   ```bash
-  docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/test neo4j
+  docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/geophysicist neo4j
   ```
 - **DuckDB:** No setup needed; uses a local file.
 
