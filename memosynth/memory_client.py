@@ -1,6 +1,11 @@
 import os
 import asyncio
 
+from memosynth.vector_store import write_memory, model
+from memosynth.timeline_store import log_memory, log_conflict
+from memosynth.graph_store import create_memory_node
+from memosynth.utility import cosine_similarity, call_ollama
+
 # Create the config directory if it doesn't exist
 os.makedirs('config', exist_ok=True)
 
@@ -68,14 +73,10 @@ async def query_memory(prompt, top_k=3, recency_weight=0.3, confidence_weight=0.
 
     # Step 2: Sort and return top_k
     scored_memories.sort(key=lambda x: x[1], reverse=True)
-    return [mem[0] for mem in scored_memories[:top_k]]
+    results = [mem[0] for mem in scored_memories[:top_k]]
+    await log_query(prompt, top_k, [m["id"] for m in results])
+    return results
 
-
-
-from memosynth.vector_store import write_memory, model
-from memosynth.timeline_store import log_memory, log_conflict
-from memosynth.graph_store import create_memory_node
-from memosynth.utility import cosine_similarity, call_ollama
 
 async def write_and_sync_memory(memory):
     try:
@@ -97,7 +98,9 @@ async def summarize_memories(memories, temperature=0.25):
     "Only output the direct answer:\n"
     + "\n".join([m["summary"] for m in memories])
     )
-    return await call_ollama(prompt, temperature=temperature)
+    summary = await call_ollama(prompt, temperature=temperature)
+    await log_summary([m["id"] for m in memories], prompt, summary)
+    return summary
 
 
 
@@ -112,7 +115,7 @@ async def diff(mem1, mem2, model_param=None):
     # Calculate cosine similarity
     similarity = cosine_similarity(vec1, vec2)
     
-    # Threshold: 0.98 and above score will be treated as similar
+    # Threshold: A score of 0.98 and above will be treated as similar
     if similarity < 0.98:
         return f"⚠️ Difference in summaries (cosine similarity: {similarity:.3f}):\n1: {mem1['summary']}\n2: {mem2['summary']}"
     else:
