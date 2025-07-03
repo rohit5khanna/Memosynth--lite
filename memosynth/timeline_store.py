@@ -39,6 +39,30 @@ async def init_tables():
             )
             """
         )
+        await asyncio.to_thread(
+            con.execute,
+            """
+            CREATE TABLE IF NOT EXISTS query_log (
+                timestamp TEXT,
+                user_id TEXT,
+                query_text TEXT,
+                top_k INT,
+                result_ids TEXT  
+            )
+            """
+        )
+        await asyncio.to_thread(
+            con.execute,
+            """
+            CREATE TABLE IF NOT EXISTS summary_log (
+                timestamp TEXT,
+                user_id TEXT,
+                memory_ids TEXT,   
+                prompt TEXT,
+                summary TEXT
+            )
+            """
+        )
 
 # Ensure tables are initialized on module load
 asyncio.create_task(init_tables())
@@ -86,5 +110,37 @@ async def log_conflict(new_memory, current_memory, conflict_type="version"):
                 current_memory.get("version"),
                 new_memory.get("confidence"),
                 current_memory.get("confidence")
+            )
+        )
+
+#Query Logging
+
+async def log_query(query_text, top_k, result_ids, user_id=None):
+    async with db_lock:
+        await asyncio.to_thread(
+            con.execute,
+            "INSERT INTO query_log VALUES (?, ?, ?, ?, ?)",
+            (
+                datetime.now(timezone.utc).isoformat(),
+                user_id,
+                query_text,
+                top_k,
+                json.dumps(result_ids)
+            )
+        )
+
+#Summary Logging
+
+async def log_summary(memory_ids, prompt, summary, user_id=None):
+    async with db_lock:
+        await asyncio.to_thread(
+            con.execute,
+            "INSERT INTO summary_log VALUES (?, ?, ?, ?, ?)",
+            (
+                datetime.now(timezone.utc).isoformat(),
+                user_id,
+                json.dumps(memory_ids),
+                prompt,
+                summary
             )
         )
